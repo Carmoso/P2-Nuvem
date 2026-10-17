@@ -29,7 +29,7 @@ O público-alvo são os organizadores que agendam eventos na faculdade e os admi
 | US-04 | **[RF-04]** | Como *Administrador*, quero consultar quantos eventos ocorreram em cada auditório para analisar sua ocupação. | - **Quando** consulto o relatório de ocupação, **então** recebo uma linha por auditório com a quantidade de eventos ocorridos nele.<br>- Para um auditório sem eventos ocorridos, o relatório apresenta quantidade zero.<br>- As quantidades correspondem aos eventos cadastrados e já ocorridos até a data da consulta. |
 | US-05 | **[RF-05]** | Como *Organizador ou Administrador*, quero acessar a plataforma pelo navegador para executar as tarefas do meu perfil sem estar no campus. | - **Quando** acesso o endereço publicado da aplicação em um navegador, **então** a interface é carregada.<br>- As telas da aplicação conseguem consultar a API pelo navegador sem falha de comunicação entre origens (CORS).<br>- As funcionalidades disponíveis para cada perfil podem ser usadas pela interface. |
 
-## 5. Decisões em Aberto
+## 5. Decisões em Aberto    
 
 * **US-01/US-05:** Definir como o sistema identifica o usuário e quais ações são permitidas para cada perfil, para tornar verificável o acesso a “meus eventos” e às funcionalidades de cada papel.
 * **US-02:** Definir formatos de imagem aceitos e limite de tamanho do banner.
