@@ -13,14 +13,14 @@ O público-alvo são os organizadores que agendam eventos na faculdade e os admi
 
 ## 3. Requisitos Funcionais
 
-* **RF-02:** Permitir o envio do banner do evento ao S3 usando uma URL pré-assinada gerada pelo backend e persistir no RDS o caminho associado ao evento.
-* **RF-03:** Gerar uma miniatura para banners enviados ao S3 por meio de uma Lambda acionada pelo upload, armazená-la no S3 e atualizar `thumbnail_url` no RDS.
-* **RF-04:** Disponibilizar `GET /relatorios/ocupacao` por API Gateway e Lambda, retornando a quantidade de eventos por auditório a partir de uma agregação no RDS.
-* **RF-05:** Publicar o front-end como site estático no S3 e permitir que ele consuma a API hospedada na EC2 e as Lambdas, com CORS configurado.
-* **RF-06:** Permitir cadastrar, consultar, editar e desativar auditórios e espaços de eventos. Persistir `Auditorio` no RDS e registrar indisponibilidades e bloqueios por período para evitar conflitos de agendamento.
-* **RF-07:** Permitir consultar a disponibilidade de auditórios por data e intervalo de horário, considerando conflitos de agendamento, capacidade e bloqueios previamente cadastrados.
-* **RF-08:** Permitir cadastrar, consultar, editar e cancelar eventos associados a auditórios, persistindo `Evento` e `Auditorio` no RDS e impedindo eventos com horários conflitantes no mesmo auditório.
-* **RF-09:** Permitir cancelar ou encerrar eventos e liberar o auditório no período correspondente, atualizando o status do evento para refletir sua indisponibilidade e evitar agendamentos conflitantes.
+* **RF-01:** Permitir o envio do banner do evento ao S3 usando uma URL pré-assinada gerada pelo backend e persistir no RDS o caminho associado ao evento.
+* **RF-02:** Gerar uma miniatura para banners enviados ao S3 por meio de uma Lambda acionada pelo upload, armazená-la no S3 e atualizar `thumbnail_url` no RDS.
+* **RF-03:** Disponibilizar `GET /relatorios/ocupacao` por API Gateway e Lambda, retornando a quantidade de eventos por auditório a partir de uma agregação no RDS.
+* **RF-04:** Publicar o front-end como site estático no S3 e permitir que ele consuma a API hospedada na EC2 e as Lambdas, com CORS configurado.
+* **RF-05:** Permitir cadastrar, consultar, editar e desativar auditórios e espaços de eventos. Persistir `Auditorio` no RDS e registrar indisponibilidades e bloqueios por período para evitar conflitos de agendamento.
+* **RF-06:** Permitir consultar a disponibilidade de auditórios por data e intervalo de horário, considerando conflitos de agendamento, capacidade e bloqueios previamente cadastrados.
+* **RF-07:** Permitir cadastrar, consultar, editar e cancelar eventos associados a auditórios, persistindo `Evento` e `Auditorio` no RDS e impedindo eventos com horários conflitantes no mesmo auditório.
+* **RF-08:** Permitir cancelar ou encerrar eventos e liberar o auditório no período correspondente, atualizando o status do evento para refletir sua indisponibilidade e evitar agendamentos conflitantes.
 
 ## 4. Histórias de Usuário e Critérios de Aceite
 
