@@ -8,8 +8,8 @@
 - [x] Criar o grupo de sub-redes do RDS.
 - [x] Criar instância PostgreSQL no Amazon RDS.
 - [x] Configurar grupos de segurança para a EC2 e o RDS.
-- [ ] Registrar e documentar as regras dos grupos de segurança.
-- [ ] Confirmar e registrar que o RDS não permite acesso público.
+- [x] Registrar e documentar as regras dos grupos de segurança.
+- [x] Confirmar e registrar que o RDS não permite acesso público.
 
 ### Banco de dados
 - [x] Criar tabela `auditorios`.
