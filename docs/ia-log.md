@@ -17,3 +17,22 @@ Revisar `specs/spec.md` e verificar se ele respondia às perguntas: qual problem
 
 A validação do arquivo `specs/spec.md` não apontou erros.
 
+## 2026-10-24
+
+### Solicitação
+
+Iniciar a Fase 1 do front-end do Sistema de Gestão de Eventos e Auditórios Universitários, lendo o repositório e usando `specs/design.md` como fonte de verdade para a arquitetura AWS.
+
+### Análise e alterações
+
+- Foram lidos os arquivos existentes do repositório, incluindo as especificações, a API Flask e o schema SQL.
+- Foi proposta a estrutura futura do front-end em `src/`, mantendo separadas as páginas, componentes, serviços, estado global, mocks e tipos.
+- Foi criado `src/types/index.ts` com tipos de usuários, auditórios, eventos, disponibilidade, bloqueios, upload de banners, relatórios e contratos REST compatíveis com a API atual.
+- Foi criado `src/mocks/db.ts` com dados mock de usuários, auditórios, eventos, bloqueios de manutenção e métricas de ocupação.
+- Os DTOs REST refletem os campos snake_case existentes no backend; os modelos da interface usam camelCase. Campos ainda não implementados no backend, como status do auditório e banner, permanecem representados apenas no domínio da interface/mock.
+- Não foram configurados Vite, dependências ou telas nesta fase, conforme o plano iterativo solicitado.
+
+### Validação
+
+- Os diagnósticos de `src/types/index.ts` e `src/mocks/db.ts` não apontaram erros.
+
