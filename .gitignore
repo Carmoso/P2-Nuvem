@@ -2,3 +2,9 @@
 __pycache__/
 *.py[cod]
 .env
+
+# Credenciais e configurações locais
+.env.*
+!.env.example
+.aws/
+*.pem

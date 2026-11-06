@@ -2,8 +2,10 @@ import os
 from flask import Flask, jsonify, request
 import psycopg
 from psycopg.rows import dict_row
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 def conectar():
     return psycopg.connect(

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Eventos e Auditórios</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <aside class="sidebar">
+        <h2>EventHub</h2>
+        <p class="subtitle">Gestão de espaços e eventos</p>
+
+        <nav>
+            <button class="nav-btn active" data-page="inicio">Visão geral</button>
+            <button class="nav-btn" data-page="eventos">Eventos</button>
+            <button class="nav-btn" data-page="auditorios">Auditórios</button>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <header>
+            <div>
+                <h1 id="page-title">Visão geral</h1>
+                <p>Gerencie seus eventos e espaços em um só lugar.</p>
+            </div>
+            <span id="api-status" class="status">Verificando API...</span>
+        </header>
+
+        <section id="inicio" class="page active">
+            <div class="cards">
+                <article class="card">
+                    <span>Total de eventos</span>
+                    <strong id="total-eventos">0</strong>
+                </article>
+                <article class="card">
+                    <span>Auditórios cadastrados</span>
+                    <strong id="total-auditorios">0</strong>
+                </article>
+            </div>
+
+            <section class="panel">
+                <h2>Eventos cadastrados</h2>
+                <div id="resumo-eventos"></div>
+            </section>
+        </section>
+
+        <section id="eventos" class="page">
+            <section class="panel">
+                <h2 id="titulo-form-evento">Cadastrar evento</h2>
+                <form id="form-evento">
+                    <input type="hidden" id="evento-id">
+
+                    <label for="evento-titulo">Título</label>
+                    <input id="evento-titulo" required>
+
+                    <label for="evento-descricao">Descrição</label>
+                    <textarea id="evento-descricao"></textarea>
+
+                    <div class="form-grid">
+                        <div>
+                            <label for="evento-inicio">Data de início</label>
+                            <input type="datetime-local" id="evento-inicio" required>
+                        </div>
+                        <div>
+                            <label for="evento-fim">Data de término</label>
+                            <input type="datetime-local" id="evento-fim" required>
+                        </div>
+                    </div>
+
+                    <label for="evento-auditorio">Auditório</label>
+                    <select id="evento-auditorio" required></select>
+
+                    <label for="evento-status">Status (para edição)</label>
+                    <select id="evento-status">
+                        <option value="agendado">Agendado</option>
+                        <option value="em andamento">Em andamento</option>
+                        <option value="concluido">Concluído</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+
+                    <div class="actions">
+                        <button type="submit" class="primary">Salvar evento</button>
+                        <button type="button" id="cancelar-evento" class="secondary">Limpar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h2>Eventos cadastrados</h2>
+                <div id="lista-eventos"></div>
+            </section>
+        </section>
+
+        <section id="auditorios" class="page">
+            <section class="panel">
+                <h2 id="titulo-form-auditorio">Cadastrar auditório</h2>
+                <form id="form-auditorio">
+                    <input type="hidden" id="auditorio-id">
+
+                    <label for="auditorio-nome">Nome</label>
+                    <input id="auditorio-nome" required>
+
+                    <label for="auditorio-capacidade">Capacidade</label>
+                    <input type="number" id="auditorio-capacidade" min="1" required>
+
+                    <label for="auditorio-localizacao">Localização</label>
+                    <input id="auditorio-localizacao" required>
+
+                    <label for="auditorio-recursos">Recursos disponíveis</label>
+                    <textarea id="auditorio-recursos"></textarea>
+
+                    <div class="actions">
+                        <button type="submit" class="primary">Salvar auditório</button>
+                        <button type="button" id="cancelar-auditorio" class="secondary">Limpar</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h2>Auditórios cadastrados</h2>
+                <div id="lista-auditorios"></div>
+            </section>
+        </section>
+
+        <div id="mensagem" role="status"></div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
