@@ -8,3 +8,9 @@ __pycache__/
 !.env.example
 .aws/
 *.pem
+
+# Dependências empacotadas da Lambda
+lambdas/thumbnail/package/
+
+# Arquivos temporários
+*.save

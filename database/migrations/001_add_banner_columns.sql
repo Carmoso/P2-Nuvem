@@ -1,0 +1,5 @@
+ALTER TABLE eventos
+ADD COLUMN IF NOT EXISTS banner_url TEXT;
+
+ALTER TABLE eventos
+ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;

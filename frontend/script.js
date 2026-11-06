@@ -1,5 +1,4 @@
 
-const API_URL = "http://98.94.88.168:5000";
 
 let eventos = [];
 let auditorios = [];
@@ -167,6 +166,34 @@ document.querySelectorAll(".nav-btn").forEach(botao => {
 });
 
 // Cadastro e edição de eventos
+async function enviarBanner(eventoId, arquivo) {
+    const dados = await requisicao(`/eventos/${eventoId}/banner-url`, {
+        method: "POST",
+        body: JSON.stringify({
+            nome_arquivo: arquivo.name,
+            tipo_arquivo: arquivo.type
+        })
+    });
+
+    const upload = await fetch(dados.url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": arquivo.type
+        },
+        body: arquivo
+    });
+
+    if (!upload.ok) {
+        throw new Error("Não foi possível enviar a imagem ao S3.");
+    }
+
+    await requisicao(`/eventos/${eventoId}/banner`, {
+        method: "PUT",
+        body: JSON.stringify({
+            banner_url: dados.banner_url
+        })
+    });
+}
 $("form-evento").addEventListener("submit", async (evento) => {
     evento.preventDefault();
 
@@ -190,10 +217,19 @@ $("form-evento").addEventListener("submit", async (evento) => {
     }
 
     try {
-        await requisicao(id ? `/eventos/${id}` : "/eventos", {
-            method: id ? "PUT" : "POST",
-            body: JSON.stringify(dados)
-        });
+        const eventoSalvo = await requisicao(
+            id ? `/eventos/${id}` : "/eventos",
+            {
+               method: id ? "PUT" : "POST",
+               body: JSON.stringify(dados)
+            }
+        );
+
+        const arquivo = $("evento-banner").files[0];
+
+        if (arquivo) {
+           await enviarBanner(eventoSalvo.id, arquivo);
+        }
 
         notificar(id ? "Evento atualizado!" : "Evento cadastrado!");
         limparEvento();

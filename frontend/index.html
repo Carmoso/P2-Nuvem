@@ -72,7 +72,10 @@
                     <select id="evento-auditorio" required></select>
 
                     <label for="evento-status">Status (para edição)</label>
-                    <select id="evento-status">
+                    <label for="evento-banner">Imagem do evento (JPG, PNG ou WEBP)</label>
+		    <input type="file" id="evento-banner" accept="image/jpeg,image/png,image/webp" >
+		    <small>Selecione uma imagem para o banner do evento.</small>
+		    <select id="evento-status">
                         <option value="agendado">Agendado</option>
                         <option value="em andamento">Em andamento</option>
                         <option value="concluido">Concluído</option>
@@ -126,6 +129,7 @@
         <div id="mensagem" role="status"></div>
     </main>
 
+    <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
