@@ -180,10 +180,73 @@ async function carregarEventos() {
  }
 }
 
+
+async function carregarRelatorio() {
+    const area = $("relatorio-gerencial");
+    if (!area) return;
+
+    area.textContent = "Carregando relatório...";
+
+    try {
+        const resposta = await fetch(
+            "https://10ciu9d8h0.execute-api.us-east-1.amazonaws.com/relatorios/auditorios"
+        );
+
+        if (!resposta.ok) {
+            throw new Error(`HTTP ${resposta.status}`);
+        }
+
+        const dados = await resposta.json();
+
+        if (!Array.isArray(dados.auditorios)) {
+            throw new Error("Formato de relatório inválido");
+        }
+
+        if (dados.auditorios.length === 0) {
+            area.textContent = "Nenhum auditório cadastrado.";
+            return;
+        }
+
+        area.innerHTML = `
+            <div style="overflow-x:auto;">
+                <table style="width:100%;border-collapse:collapse;text-align:left;">
+                    <thead>
+                        <tr>
+                            <th>Auditório</th>
+                            <th>Capacidade</th>
+                            <th>Total</th>
+                            <th>Agendados</th>
+                            <th>Finalizados</th>
+                            <th>Cancelados</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${dados.auditorios.map(a => `
+                            <tr>
+                                <td>${escapar(a.auditorio)}</td>
+                                <td>${escapar(a.capacidade)}</td>
+                                <td>${escapar(a.total_eventos)}</td>
+                                <td>${escapar(a.eventos_agendados)}</td>
+                                <td>${escapar(a.eventos_finalizados)}</td>
+                                <td>${escapar(a.eventos_cancelados)}</td>
+                            </tr>
+                        `).join("")}
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+    } catch (erro) {
+        console.error("Erro ao carregar relatório:", erro);
+        area.textContent = "Relatório indisponível no momento.";
+    }
+}
+
 async function atualizarSistema() {
     try {
         await carregarAuditorios();
         await carregarEventos();
+        await carregarRelatorio();
         $("api-status").textContent = "API conectada";
         $("api-status").style.background = "#dcfce7";
         $("api-status").style.color = "#166534";
