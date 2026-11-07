@@ -14,3 +14,10 @@ lambdas/thumbnail/package/
 
 # Arquivos temporários
 *.save
+
+# Dependências da LambdaRelatorio
+lambdas/relatorio/package/
+
+# Backups temporários
+*.bak
+lambdas/relatorio/lambda-relatorio.zip
