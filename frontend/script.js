@@ -127,6 +127,11 @@ async function carregarEventos() {
         ? `<div class="item-list">${eventos.map(e => `
             <article class="item">
                 <div>
+                    <img>
+                         data-banner-evento="${e.id}"
+                         alt="Banner do evento ${escapar(e.titulo)}"
+                         style="display:none; width:160px; height:105px; object-fit:cover; border-radius:10px;"
+                    </img>
                     <h3>${escapar(e.titulo)}</h3>
                     <p>Auditório: ${escapar(e.auditorio_nome)}</p>
                     <p>Início: ${escapar(formatarData(e.data_inicio))}</p>
@@ -143,6 +148,36 @@ async function carregarEventos() {
 
     $("lista-eventos").innerHTML = conteudo;
     $("resumo-eventos").innerHTML = conteudo;
+
+    for (const e of eventos) {
+    if (!e.thumbnail_url && !e.banner_url) continue;
+
+    try {
+        const dados = await requisicao(
+            `/eventos/${e.id}/imagem-url`
+        );
+
+        document.querySelectorAll(
+            `img[data-banner-evento="${e.id}"]`
+        ).forEach(imagem => {
+            imagem.onload = () => {
+                imagem.style.display = "block";
+            };
+
+            imagem.onerror = () => {
+                console.warn(`Falha ao carregar imagem do evento ${e.id}`);
+            };
+
+            imagem.src = dados.url;
+        });
+
+    } catch (erro) {
+        console.warn(
+            `Imagem do evento ${e.id} indisponível:`,
+            erro.message
+        );
+    }
+ }
 }
 
 async function atualizarSistema() {

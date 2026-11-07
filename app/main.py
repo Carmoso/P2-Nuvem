@@ -2,6 +2,7 @@ import os
 from flask import Flask, jsonify, request
 import psycopg
 import boto3
+from botocore.config import Config
 from psycopg.rows import dict_row
 from flask_cors import CORS
 
@@ -9,7 +10,7 @@ app = Flask(__name__)
 CORS(app)
 
 S3_BUCKET = "p2-nuvem-eventhub-banners-475858528651-2026"
-s3 = boto3.client("s3", region_name="us-east-1")
+s3 = boto3.client("s3", region_name="us-east-1", config=Config(signature_version="s3v4"))
 
 def conectar():
     return psycopg.connect(
@@ -94,6 +95,38 @@ def atualizar_auditorio(item_id):
 def excluir_auditorio(item_id):
     consultar("DELETE FROM auditorios WHERE id = %s", (item_id,), False)
     return "", 204
+
+@app.get("/eventos/<int:evento_id>/imagem-url")
+def obter_url_imagem_evento(evento_id):
+    registros = consultar(
+        """
+        SELECT banner_url, thumbnail_url
+        FROM eventos
+        WHERE id = %s
+        """,
+        (evento_id,)
+    )
+
+    if not registros:
+        return jsonify({"erro": "Evento não encontrado"}), 404
+
+    evento = registros[0]
+
+    chave = evento["thumbnail_url"] or evento["banner_url"]
+
+    if not chave:
+        return jsonify({"erro": "Evento sem imagem"}), 404
+
+    url = s3.generate_presigned_url(
+        "get_object",
+        Params={
+            "Bucket": S3_BUCKET,
+            "Key": chave
+        },
+        ExpiresIn=900
+    )
+
+    return jsonify({"url": url})
 
 @app.get("/eventos")
 def listar_eventos():
