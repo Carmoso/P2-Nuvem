@@ -101,6 +101,7 @@ async function carregarAuditorios() {
                 <div>
                     <h3>${escapar(a.nome)}</h3>
                     <p>Capacidade: ${escapar(a.capacidade)} pessoas</p>
+                      <p>Situação: ${a.ativo ? "Ativo" : "Desativado"}</p>
                     <p>Localização: ${escapar(a.localizacao)}</p>
                     <p>Recursos: ${escapar(a.recursos || "Não informados")}</p>
                 </div>
@@ -548,6 +549,12 @@ function limparEvento() {
 
 $("cancelar-evento").addEventListener("click", limparEvento);
 
+// Restaurar o formulário de auditórios
+$("form-auditorio").addEventListener("reset", () => {
+    $("auditorio-situacao-edicao").hidden = true;
+    $("auditorio-ativo").value = "true";
+});
+
 // Cadastro e edição de auditórios
 $("form-auditorio").addEventListener("submit", async (evento) => {
     evento.preventDefault();
@@ -560,6 +567,10 @@ $("form-auditorio").addEventListener("submit", async (evento) => {
         localizacao: $("auditorio-localizacao").value.trim(),
         recursos: $("auditorio-recursos").value.trim()
     };
+
+    if (id) {
+        dados.ativo = $("auditorio-ativo").value === "true";
+    }
 
     try {
         await requisicao(id ? `/auditorios/${id}` : "/auditorios", {
@@ -584,6 +595,8 @@ function editarAuditorio(id) {
     $("auditorio-capacidade").value = auditorio.capacidade;
     $("auditorio-localizacao").value = auditorio.localizacao;
     $("auditorio-recursos").value = auditorio.recursos || "";
+    $("auditorio-ativo").value = String(auditorio.ativo);
+    $("auditorio-situacao-edicao").hidden = false;
 
     $("titulo-form-auditorio").textContent = "Editar auditório";
     mostrarPagina("auditorios");
