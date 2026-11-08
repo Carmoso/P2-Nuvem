@@ -83,7 +83,8 @@ function mostrarPagina(pagina) {
     const titulos = {
         inicio: "Visão geral",
         eventos: "Gestão de eventos",
-        auditorios: "Gestão de auditórios"
+        auditorios: "Gestão de auditórios",
+          disponibilidade: "Consultar disponibilidade"
     };
 
     $("page-title").textContent = titulos[pagina];
@@ -282,6 +283,110 @@ function validarPeriodoEvento() {
 ["evento-inicio", "evento-fim"].forEach(id => {
     $(id).addEventListener("input", validarPeriodoEvento);
     $(id).addEventListener("change", validarPeriodoEvento);
+});
+
+
+// RF-06: Consulta de disponibilidade dos auditórios
+$("form-disponibilidade").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    const inicio = $("disponibilidade-inicio").value;
+    const fim = $("disponibilidade-fim").value;
+    const capacidade = Number($("disponibilidade-capacidade").value);
+    const area = $("resultado-disponibilidade");
+
+    if (!inicio || !fim || fim <= inicio) {
+        notificar("A data de término deve ser posterior à de início.");
+        return;
+    }
+
+    if (!Number.isSafeInteger(capacidade) || capacidade <= 0) {
+        notificar("Informe uma quantidade válida de participantes.");
+        return;
+    }
+
+    const parametros = new URLSearchParams({
+        data_inicio: new Date(inicio).toISOString(),
+        data_fim: new Date(fim).toISOString(),
+        capacidade: String(capacidade)
+    });
+
+    area.textContent = "Consultando disponibilidade...";
+
+    try {
+        const resultado = await requisicao(
+            `/auditorios/disponiveis?${parametros.toString()}`
+        );
+
+        const disponiveis = resultado.auditorios;
+
+        if (!Array.isArray(disponiveis)) {
+            throw new Error("Resposta inesperada da API.");
+        }
+
+        if (disponiveis.length === 0) {
+            area.textContent =
+                resultado.mensagem ||
+                "Nenhum auditório disponível para esse período.";
+            return;
+        }
+
+        area.innerHTML = `
+            <p>${escapar(resultado.mensagem)}</p>
+            <div class="item-list">
+                ${disponiveis.map(a => `
+                    <article class="item">
+                        <div>
+                            <h3>${escapar(a.nome)}</h3>
+                            <p>Capacidade: ${escapar(a.capacidade)} pessoas</p>
+                            <p>Localização: ${escapar(a.localizacao)}</p>
+                            <p>Recursos: ${escapar(a.recursos || "Não informados")}</p>
+                        </div>
+
+                        <div class="item-actions">
+                            <button
+                                type="button"
+                                class="edit"
+                                data-auditorio-id="${escapar(a.id)}"
+                            >
+                                Selecionar auditório
+                            </button>
+                        </div>
+                    </article>
+                `).join("")}
+            </div>
+        `;
+
+    } catch (erro) {
+        area.textContent = `Erro ao consultar disponibilidade: ${erro.message}`;
+        notificar(erro.message);
+    }
+});
+
+// Preencher automaticamente o formulário de eventos
+$("resultado-disponibilidade").addEventListener("click", (evento) => {
+    const botao = evento.target.closest(
+        "button[data-auditorio-id]"
+    );
+
+    if (!botao) return;
+
+    const auditorioId = Number(botao.dataset.auditorioId);
+
+    if (!Number.isSafeInteger(auditorioId)) return;
+
+    limparEvento();
+
+    $("evento-inicio").value = $("disponibilidade-inicio").value;
+    $("evento-fim").value = $("disponibilidade-fim").value;
+    $("evento-participantes").value =
+        $("disponibilidade-capacidade").value;
+    $("evento-auditorio").value = String(auditorioId);
+
+    validarPeriodoEvento();
+    mostrarPagina("eventos");
+
+    $("evento-titulo").focus();
 });
 
 // Cadastro e edição de eventos

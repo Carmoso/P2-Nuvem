@@ -15,6 +15,7 @@
             <button class="nav-btn active" data-page="inicio">Visão geral</button>
             <button class="nav-btn" data-page="eventos">Eventos</button>
             <button class="nav-btn" data-page="auditorios">Auditórios</button>
+            <button class="nav-btn" data-page="disponibilidade">Disponibilidade</button>
         </nav>
     </aside>
 
@@ -43,7 +44,7 @@
                 <h2>Eventos cadastrados</h2>
                 <div id="resumo-eventos"></div>
             </section>
-        
+
         <section class="panel">
             <h2>Relatório gerencial por auditório</h2>
             <p>Indicadores de eventos agrupados por auditório.</p>
@@ -52,7 +53,52 @@
                  <p>Relatório ainda não carregado.</p>
             </div>
         </section>
-        
+
+        </section>
+        <section id="disponibilidade" class="page">
+            <section class="panel">
+                <h2>Consultar disponibilidade</h2>
+                <p>Encontre auditórios disponíveis para o período do seu evento.</p>
+
+                <form id="form-disponibilidade">
+                    <div class="form-grid">
+                        <div>
+                            <label for="disponibilidade-inicio">Data de início</label>
+                            <input type="datetime-local" id="disponibilidade-inicio" required>
+                        </div>
+
+                        <div>
+                            <label for="disponibilidade-fim">Data de término</label>
+                            <input type="datetime-local" id="disponibilidade-fim" required>
+                        </div>
+                    </div>
+
+                    <label for="disponibilidade-capacidade">
+                        Quantidade de participantes
+                    </label>
+                    <input
+                        type="number"
+                        id="disponibilidade-capacidade"
+                        min="1"
+                        step="1"
+                        placeholder="Ex.: 100"
+                        required
+                    >
+
+                    <div class="actions">
+                        <button type="submit" class="primary">
+                            Buscar auditórios disponíveis
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel">
+                <h2>Resultado da consulta</h2>
+                <div id="resultado-disponibilidade" aria-live="polite">
+                    <p>Informe os dados acima para consultar a disponibilidade.</p>
+                </div>
+            </section>
         </section>
         <section id="eventos" class="page">
             <section class="panel">

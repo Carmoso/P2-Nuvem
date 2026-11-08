@@ -330,6 +330,79 @@ def excluir_bloqueio_auditorio(bloqueio_id):
     return "", 204
 
 
+
+@app.get("/auditorios/disponiveis")
+def consultar_auditorios_disponiveis():
+    inicio_texto = request.args.get("data_inicio")
+    fim_texto = request.args.get("data_fim")
+    capacidade_texto = request.args.get("capacidade")
+
+    if not inicio_texto or not fim_texto or not capacidade_texto:
+        return jsonify({
+            "erro": "Informe data_inicio, data_fim e capacidade."
+        }), 400
+
+    try:
+        inicio = normalizar_data_bloqueio(inicio_texto)
+        fim = normalizar_data_bloqueio(fim_texto)
+
+        capacidade = int(capacidade_texto)
+
+        if capacidade <= 0 or capacidade > 2147483647:
+            raise ValueError("Capacidade inválida")
+
+    except (ValueError, TypeError, OverflowError):
+        return jsonify({
+            "erro": "Informe datas e capacidade válidas."
+        }), 400
+
+    if inicio >= fim:
+        return jsonify({
+            "erro": "A data de término deve ser posterior à de início."
+        }), 400
+
+    auditorios = consultar("""
+        SELECT a.*
+        FROM auditorios a
+        WHERE a.ativo = TRUE
+          AND a.capacidade >= %s
+
+          AND NOT EXISTS (
+              SELECT 1
+              FROM eventos e
+              WHERE e.auditorio_id = a.id
+                AND e.status <> 'cancelado'
+                AND e.data_inicio < %s
+                AND e.data_fim > %s
+          )
+
+          AND NOT EXISTS (
+              SELECT 1
+              FROM bloqueios_auditorios b
+              WHERE b.auditorio_id = a.id
+                AND b.data_inicio < %s
+                AND b.data_fim > %s
+          )
+
+        ORDER BY a.capacidade, a.nome
+    """, (
+        capacidade,
+        fim, inicio,
+        fim, inicio
+    ))
+
+    if not auditorios:
+        return jsonify({
+            "auditorios": [],
+            "mensagem": "Nenhum auditório disponível para esse período."
+        })
+
+    return jsonify({
+        "auditorios": auditorios,
+        "mensagem": f"{len(auditorios)} auditório(s) disponível(is)."
+    })
+
+
 @app.get("/eventos/<int:evento_id>/imagem-url")
 def obter_url_imagem_evento(evento_id):
     registros = consultar(
