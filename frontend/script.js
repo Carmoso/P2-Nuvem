@@ -209,9 +209,34 @@ async function carregarRelatorio() {
             return;
         }
 
+        const totalEventos = dados.auditorios.reduce(
+            (soma, a) => soma + (Number(a.total_eventos) || 0), 0
+        );
+
+        const totalFinalizados = dados.auditorios.reduce(
+            (soma, a) => soma + (Number(a.eventos_finalizados) || 0), 0
+        );
+
         area.innerHTML = `
-            <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;text-align:left;">
+            <div class="relatorio-indicadores">
+                <div class="relatorio-indicador">
+                    <span>Auditórios</span>
+                    <strong>${dados.auditorios.length}</strong>
+                </div>
+                <div class="relatorio-indicador">
+                    <span>Eventos contabilizados</span>
+                    <strong>${totalEventos}</strong>
+                </div>
+                <div class="relatorio-indicador">
+                    <span>Eventos finalizados</span>
+                    <strong>${totalFinalizados}</strong>
+                </div>
+            </div>
+
+            <div class="relatorio-tabela-container"
+                 tabindex="0"
+                 aria-label="Tabela de ocupação por auditório">
+                <table class="relatorio-tabela">
                     <thead>
                         <tr>
                             <th>Auditório</th>
@@ -225,17 +250,38 @@ async function carregarRelatorio() {
                     <tbody>
                         ${dados.auditorios.map(a => `
                             <tr>
-                                <td>${escapar(a.auditorio)}</td>
-                                <td>${escapar(a.capacidade)}</td>
-                                <td>${escapar(a.total_eventos)}</td>
-                                <td>${escapar(a.eventos_agendados)}</td>
-                                <td>${escapar(a.eventos_finalizados)}</td>
-                                <td>${escapar(a.eventos_cancelados)}</td>
+                                <td class="relatorio-nome">
+                                    ${escapar(a.auditorio)}
+                                </td>
+                                <td>${Number(a.capacidade) || 0}</td>
+                                <td class="relatorio-total">
+                                    ${Number(a.total_eventos) || 0}
+                                </td>
+                                <td>
+                                    <span class="relatorio-tag tag-agendado">
+                                        ${Number(a.eventos_agendados) || 0}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="relatorio-tag tag-finalizado">
+                                        ${Number(a.eventos_finalizados) || 0}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="relatorio-tag tag-cancelado">
+                                        ${Number(a.eventos_cancelados) || 0}
+                                    </span>
+                                </td>
                             </tr>
                         `).join("")}
                     </tbody>
                 </table>
             </div>
+
+            <p class="relatorio-observacao">
+                Considera eventos cuja data de início já foi alcançada.
+                Eventos cancelados permanecem no histórico.
+            </p>
         `;
 
     } catch (erro) {
