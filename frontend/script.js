@@ -247,6 +247,7 @@ async function carregarRelatorio() {
 async function atualizarSistema() {
     try {
         await carregarAuditorios();
+        sincronizarSeletorBloqueios();
         await carregarEventos();
         await carregarRelatorio();
         $("api-status").textContent = "API conectada";
@@ -553,6 +554,205 @@ $("cancelar-evento").addEventListener("click", limparEvento);
 $("form-auditorio").addEventListener("reset", () => {
     $("auditorio-situacao-edicao").hidden = true;
     $("auditorio-ativo").value = "true";
+});
+
+
+// RF-05: Consultar bloqueios de auditórios
+async function carregarBloqueiosSelecionados() {
+    const seletor = $("bloqueio-auditorio");
+    const area = $("lista-bloqueios");
+    const auditorioId = seletor.value;
+
+    if (!auditorioId) {
+        area.textContent =
+            "Selecione um auditório para consultar seus bloqueios.";
+        return;
+    }
+
+    area.textContent = "Carregando bloqueios...";
+
+    try {
+        const bloqueios = await requisicao(
+            `/auditorios/${auditorioId}/bloqueios`
+        );
+
+        // Evitar mostrar resultados de outro auditório
+        if (seletor.value !== auditorioId) return;
+
+        if (!Array.isArray(bloqueios)) {
+            throw new Error("Resposta inesperada da API.");
+        }
+
+        if (bloqueios.length === 0) {
+            area.textContent =
+                "Este auditório não possui bloqueios cadastrados.";
+            return;
+        }
+
+        area.innerHTML = `
+            <div class="item-list">
+                ${bloqueios.map(b => `
+                    <article class="item">
+                        <div>
+                            <h3>${escapar(b.motivo || "Indisponibilidade")}</h3>
+                            <p>Início: ${escapar(formatarData(b.data_inicio))}</p>
+                            <p>Término: ${escapar(formatarData(b.data_fim))}</p>
+                        </div>
+                        <div class="item-actions">
+                            <button
+                                type="button"
+                                class="delete"
+                                data-bloqueio-id="${Number(b.id)}"
+                            >
+                                Remover bloqueio
+                            </button>
+                        </div>
+                    </article>
+                `).join("")}
+            </div>
+        `;
+
+    } catch (erro) {
+        if (seletor.value !== auditorioId) return;
+        area.textContent = "Não foi possível carregar os bloqueios.";
+        notificar(erro.message);
+    }
+}
+
+// Atualizar as opções quando os auditórios forem carregados
+function sincronizarSeletorBloqueios() {
+    const seletor = $("bloqueio-auditorio");
+    const selecaoAnterior = seletor.value;
+
+    seletor.innerHTML =
+        '<option value="">Selecione um auditório</option>' +
+        auditorios.map(a => `
+            <option value="${Number(a.id)}">
+                ${escapar(a.nome)} (${a.ativo ? "Ativo" : "Desativado"})
+            </option>
+        `).join("");
+
+    if (auditorios.some(a => String(a.id) === selecaoAnterior)) {
+        seletor.value = selecaoAnterior;
+    }
+
+    carregarBloqueiosSelecionados();
+}
+
+$("bloqueio-auditorio").addEventListener(
+    "change",
+    carregarBloqueiosSelecionados
+);
+
+
+// RF-05: Validar datas dos bloqueios
+function validarPeriodoBloqueio() {
+    const inicio = $("bloqueio-inicio");
+    const fim = $("bloqueio-fim");
+
+    fim.min = inicio.value || "";
+
+    if (inicio.value && fim.value && fim.value <= inicio.value) {
+        fim.setCustomValidity(
+            "O término do bloqueio deve ser posterior ao início."
+        );
+    } else {
+        fim.setCustomValidity("");
+    }
+}
+
+["bloqueio-inicio", "bloqueio-fim"].forEach(id => {
+    $(id).addEventListener("input", validarPeriodoBloqueio);
+    $(id).addEventListener("change", validarPeriodoBloqueio);
+});
+
+// RF-05: Cadastrar bloqueio
+$("form-bloqueio").addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    const auditorioId = Number($("bloqueio-auditorio").value);
+    const inicio = $("bloqueio-inicio").value;
+    const fim = $("bloqueio-fim").value;
+    const motivo = $("bloqueio-motivo").value.trim();
+
+    if (!Number.isSafeInteger(auditorioId) || auditorioId <= 0) {
+        notificar("Selecione um auditório válido.");
+        return;
+    }
+
+    if (!inicio || !fim || fim <= inicio) {
+        notificar("O término do bloqueio deve ser posterior ao início.");
+        return;
+    }
+
+    const dataInicio = new Date(inicio);
+    const dataFim = new Date(fim);
+
+    if (
+        Number.isNaN(dataInicio.getTime()) ||
+        Number.isNaN(dataFim.getTime())
+    ) {
+        notificar("Informe datas válidas.");
+        return;
+    }
+
+    try {
+        await requisicao(`/auditorios/${auditorioId}/bloqueios`, {
+            method: "POST",
+            body: JSON.stringify({
+                data_inicio: dataInicio.toISOString(),
+                data_fim: dataFim.toISOString(),
+                motivo: motivo
+            })
+        });
+
+        notificar("Bloqueio cadastrado com sucesso!");
+
+        $("bloqueio-inicio").value = "";
+        $("bloqueio-fim").value = "";
+        $("bloqueio-motivo").value = "";
+
+        validarPeriodoBloqueio();
+        await carregarBloqueiosSelecionados();
+
+    } catch (erro) {
+        notificar(erro.message);
+    }
+});
+
+// RF-05: Remover bloqueio
+$("lista-bloqueios").addEventListener("click", async (evento) => {
+    const botao = evento.target.closest(
+        "button[data-bloqueio-id]"
+    );
+
+    if (!botao) return;
+
+    const bloqueioId = Number(botao.dataset.bloqueioId);
+
+    if (!Number.isSafeInteger(bloqueioId) || bloqueioId <= 0) {
+        notificar("Bloqueio inválido.");
+        return;
+    }
+
+    if (!confirm("Deseja realmente remover este bloqueio?")) {
+        return;
+    }
+
+    botao.disabled = true;
+
+    try {
+        await requisicao(`/bloqueios/${bloqueioId}`, {
+            method: "DELETE"
+        });
+
+        notificar("Bloqueio removido com sucesso!");
+        await carregarBloqueiosSelecionados();
+
+    } catch (erro) {
+        botao.disabled = false;
+        notificar(erro.message);
+    }
 });
 
 // Cadastro e edição de auditórios

@@ -200,6 +200,47 @@
                 <h2>Auditórios cadastrados</h2>
                 <div id="lista-auditorios"></div>
             </section>
+
+              <section class="panel">
+                  <h2>Bloqueios de auditórios</h2>
+                  <p>Registre períodos de manutenção ou indisponibilidade dos espaços.</p>
+
+                  <form id="form-bloqueio">
+                      <label for="bloqueio-auditorio">Auditório</label>
+                      <select id="bloqueio-auditorio" required>
+                          <option value="">Selecione um auditório</option>
+                      </select>
+
+                      <div class="form-grid">
+                          <div>
+                              <label for="bloqueio-inicio">Data de início</label>
+                              <input type="datetime-local" id="bloqueio-inicio" required>
+                          </div>
+
+                          <div>
+                              <label for="bloqueio-fim">Data de término</label>
+                              <input type="datetime-local" id="bloqueio-fim" required>
+                          </div>
+                      </div>
+
+                      <label for="bloqueio-motivo">Motivo do bloqueio</label>
+                      <textarea
+                          id="bloqueio-motivo"
+                          placeholder="Ex.: Manutenção dos equipamentos"
+                      ></textarea>
+
+                      <div class="actions">
+                          <button type="submit" class="primary">
+                              Registrar bloqueio
+                          </button>
+                      </div>
+                  </form>
+
+                  <h3>Bloqueios cadastrados</h3>
+                  <div id="lista-bloqueios" aria-live="polite">
+                      <p>Selecione um auditório para consultar seus bloqueios.</p>
+                  </div>
+              </section>
         </section>
 
         <div id="mensagem" role="status"></div>
