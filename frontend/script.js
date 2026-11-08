@@ -286,6 +286,35 @@ function validarPeriodoEvento() {
 });
 
 
+// Validar as datas da consulta de disponibilidade
+function validarPeriodoDisponibilidade() {
+    const inicio = $("disponibilidade-inicio");
+    const fim = $("disponibilidade-fim");
+    const resultado = $("resultado-disponibilidade");
+
+    fim.min = inicio.value || "";
+
+    if (inicio.value && fim.value && fim.value <= inicio.value) {
+        fim.setCustomValidity(
+            "A data de término deve ser posterior à data de início."
+        );
+
+        resultado.textContent =
+            "Período inválido: o término deve ser posterior ao início.";
+    } else {
+        fim.setCustomValidity("");
+
+        resultado.textContent =
+            "Preencha os campos e clique em Buscar auditórios disponíveis.";
+    }
+}
+
+// Revalidar sempre que uma das datas for modificada
+["disponibilidade-inicio", "disponibilidade-fim"].forEach(id => {
+    $(id).addEventListener("input", validarPeriodoDisponibilidade);
+    $(id).addEventListener("change", validarPeriodoDisponibilidade);
+});
+
 // RF-06: Consulta de disponibilidade dos auditórios
 $("form-disponibilidade").addEventListener("submit", async (evento) => {
     evento.preventDefault();
