@@ -58,6 +58,13 @@ def salvar_evento_validado(
     if inicio >= fim:
         raise ValueError("A data final deve ser posterior à inicial")
 
+    # Novos eventos não podem começar no passado.
+    # Eventos históricos continuam editáveis.
+    agora_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+
+    if ignorar_id is None and inicio < agora_utc:
+        return "data_passada", None
+
     if status not in ("agendado", "finalizado", "cancelado"):
         raise ValueError("Status inválido")
 
@@ -588,6 +595,11 @@ def criar_evento():
             participantes_previstos=dados.get("participantes_previstos")
         )
 
+        if resultado == "data_passada":
+            return jsonify({
+                "erro": "Não é permitido cadastrar eventos com data de início no passado."
+            }), 400
+
         if resultado == "conflito":
             return jsonify({
                 "erro": "O auditório já possui um evento nesse período."
@@ -639,6 +651,38 @@ def atualizar_evento(item_id):
 
     try:
         valores[5] = int(valores[5])
+
+        # Impedir reagendamento de eventos para datas passadas.
+        # A edição de eventos históricos sem mudar o início
+        # continua permitida.
+        if "data_inicio" in dados:
+            inicio_novo = datetime.fromisoformat(
+                str(valores[2]).replace("Z", "+00:00")
+            )
+
+            if inicio_novo.tzinfo is not None:
+                inicio_novo = inicio_novo.astimezone(
+                    timezone.utc
+                ).replace(tzinfo=None)
+
+            inicio_original = atual[0]["data_inicio"]
+
+            if inicio_original.tzinfo is not None:
+                inicio_original = inicio_original.astimezone(
+                    timezone.utc
+                ).replace(tzinfo=None)
+
+            agora_utc = datetime.now(
+                timezone.utc
+            ).replace(tzinfo=None)
+
+            if (
+                inicio_novo != inicio_original
+                and inicio_novo < agora_utc
+            ):
+                return jsonify({
+                    "erro": "Não é permitido reagendar eventos para datas passadas."
+                }), 400
 
         sql = """
             UPDATE eventos

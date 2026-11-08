@@ -270,6 +270,32 @@ document.querySelectorAll(".nav-btn").forEach(botao => {
 function validarPeriodoEvento() {
     const inicio = $("evento-inicio");
     const fim = $("evento-fim");
+    const id = $("evento-id").value;
+
+    // Identificar a data original durante a edição.
+    const eventoOriginal = id
+        ? eventos.find(e => String(e.id) === id)
+        : null;
+
+    const inicioOriginal = eventoOriginal
+        ? dataParaInput(eventoOriginal.data_inicio)
+        : null;
+
+    // Eventos históricos podem ser editados sem alterar a data.
+    const inicioAlterado =
+        !eventoOriginal || inicio.value !== inicioOriginal;
+
+    inicio.setCustomValidity("");
+
+    if (
+        inicio.value &&
+        inicioAlterado &&
+        new Date(inicio.value).getTime() < Date.now()
+    ) {
+        inicio.setCustomValidity(
+            "Não é permitido agendar ou reagendar eventos para datas passadas."
+        );
+    }
 
     fim.min = inicio.value || "";
 
@@ -284,7 +310,13 @@ function validarPeriodoEvento() {
 
 ["evento-inicio", "evento-fim"].forEach(id => {
     $(id).addEventListener("input", validarPeriodoEvento);
-    $(id).addEventListener("change", validarPeriodoEvento);
+    $(id).addEventListener("change", () => {
+        validarPeriodoEvento();
+
+        if ($("evento-inicio").validity.customError) {
+            $("evento-inicio").reportValidity();
+        }
+    });
 });
 
 
@@ -548,8 +580,8 @@ async function excluirEvento(id) {
 function limparEvento() {
     $("form-evento").reset();
     $("evento-participantes").required = true;
-    validarPeriodoEvento();
     $("evento-id").value = "";
+    validarPeriodoEvento();
     $("titulo-form-evento").textContent = "Cadastrar evento";
 }
 
