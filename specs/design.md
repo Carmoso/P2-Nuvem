@@ -3,74 +3,82 @@
 ## 1. Diagrama de Arquitetura
 
 ```plantuml
+
 @startuml
 left to right direction
 skinparam componentStyle rectangle
 skinparam linetype ortho
+skinparam shadowing false
+skinparam defaultTextAlignment center
+skinparam packageStyle rectangle
 
-actor "Usuário" as User
+actor "Usuario\n(Navegador)" as Usuario
 
-cloud "AWS" {
-    node "Amazon S3\nFront-end estático" as S3Front
-    node "Amazon S3\nBanners e miniaturas" as S3Banners
+cloud "AWS - us-east-1" {
 
-    node "Amazon API Gateway" as APIGW
-    node "AWS Lambda\nGeração de miniaturas" as LambdaThumb
-    node "AWS Lambda\nRelatório de ocupação" as LambdaReport
+    node "Amazon S3\nFrontend estatico\nHTML, CSS e JavaScript" as Frontend
 
-    frame "VPC" {
-        frame "Subnet pública" {
-            node "Amazon EC2\nAPI REST (Node.js/Python)" as EC2
+    node "Amazon S3\nBanners e miniaturas" as Banners
+
+    node "Amazon API Gateway\nRelatorios" as Gateway
+
+    frame "Amazon VPC" {
+
+        frame "Subnet publica" {
+            node "Amazon EC2\nDocker + Gunicorn\nAPI Flask - porta 5000" as EC2
         }
 
         frame "Subnets privadas" {
-            database "Amazon RDS\nPostgreSQL" as DB
+            database "Amazon RDS\nPostgreSQL\nAcesso nao publico" as RDS
         }
 
-        node "Gateway VPC Endpoint\npara S3" as VPCE
+        component "AWS Lambda\nLambdaThumb" as Thumb
+
+        component "AWS Lambda\nLambdaRelatorio" as Relatorio
+
+        node "Gateway VPC Endpoint\nAmazon S3" as Endpoint
     }
 }
 
-' Acesso ao front-end e APIs
-User --> S3Front : Acessa aplicação (RF-04)
-S3Front --> EC2 : Requisições REST\nEventos e auditórios
-S3Front --> APIGW : Consulta de ocupação (RF-03)
-APIGW --> LambdaReport : GET /relatorios/ocupacao
-LambdaReport --> DB : Agrega eventos por auditório
+Usuario --> Frontend : Acessa o site
+Usuario --> EC2 : Requisicoes REST\nvia frontend
+Usuario --> Gateway : Consulta relatorios
+Usuario --> Banners : Upload por\nURL pre-assinada
 
-' Upload de banner
-S3Front --> EC2 : Solicita URL pré-assinada (RF-01)
-EC2 --> S3Front : Retorna URL pré-assinada
-User --> S3Banners : Upload direto com URL
-EC2 --> DB : Persiste caminho do banner
+EC2 --> RDS : CRUD e regras de negocio
+EC2 --> Banners : URLs pre-assinadas\ne upload direto
 
-' Gestão do sistema
-EC2 --> DB : CRUD, disponibilidade e bloqueios\n(RF-05, RF-06, RF-07, RF-08)
+Gateway --> Relatorio : GET /relatorios/ocupacao
+Relatorio --> RDS : Consultas SQL\nJOIN e GROUP BY
 
-' Processamento de imagem
-S3Banners --> LambdaThumb : ObjectCreated (RF-02)
-LambdaThumb --> S3Banners : Armazena miniatura
-LambdaThumb --> DB : Atualiza thumbnail_url
+Banners --> Thumb : ObjectCreated\nPrefixo uploads/
+Thumb --> Banners : Grava miniaturas
+Thumb --> RDS : Atualiza thumbnail_url
 
-' Acesso ao S3 pela VPC
-EC2 ..> VPCE : Acesso privado ao S3
-VPCE ..> S3Banners : Gateway Endpoint
-
-note right of LambdaThumb
-Se precisar acessar o RDS privado,
-configurar conectividade com a VPC.
-Filtrar eventos para evitar
-recursão na geração de miniaturas.
-end note
-
-note right of LambdaReport
-Se o RDS estiver em subnets privadas,
-configurar a Lambda para alcançá-lo.
-end note
+Endpoint ..> Banners : Rota S3 das\nsubnets privadas
 
 note bottom of EC2
-A subnet pública exige rota para
-Internet Gateway e regras de acesso.
+API executada em Docker.
+Credenciais automaticas
+via LabInstanceProfile / LabRole.
+
+Servico systemd identifica o
+IP publico pelo IMDSv2 e
+publica config.js no S3.
+end note
+
+note bottom of RDS
+Duas subnets privadas.
+
+Security Group permite TCP 5432
+somente dos grupos autorizados
+da EC2 e das Lambdas.
+end note
+
+note bottom of Thumb
+Acionada somente para objetos
+com prefixo uploads/.
 end note
 
 @enduml
+```
