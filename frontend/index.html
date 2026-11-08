@@ -80,15 +80,29 @@
                     <label for="evento-auditorio">Auditório</label>
                     <select id="evento-auditorio" required></select>
 
+                    <label for="evento-participantes">Participantes previstos</label>
+                    <input
+                        type="number"
+                        id="evento-participantes"
+                        min="1"
+                        step="1"
+                        placeholder="Ex.: 100"
+                    >
+
                     <label for="evento-status">Status (para edição)</label>
-                    <label for="evento-banner">Imagem do evento (JPG, PNG ou WEBP)</label>
-		    <input type="file" id="evento-banner" accept="image/jpeg,image/png,image/webp" >
-		    <small>Selecione uma imagem para o banner do evento.</small>
-		    <select id="evento-status">
+                    <select id="evento-status">
                         <option value="agendado">Agendado</option>
                         <option value="finalizado">Finalizado</option>
                         <option value="cancelado">Cancelado</option>
                     </select>
+
+                    <label for="evento-banner">Imagem do evento (JPG, PNG ou WEBP)</label>
+                    <input
+                        type="file"
+                        id="evento-banner"
+                        accept="image/jpeg,image/png,image/webp"
+                    >
+                    <small>Selecione uma imagem para o banner do evento.</small>
 
                     <div class="actions">
                         <button type="submit" class="primary">Salvar evento</button>

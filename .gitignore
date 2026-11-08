@@ -21,3 +21,6 @@ lambdas/relatorio/package/
 # Backups temporários
 *.bak
 lambdas/relatorio/lambda-relatorio.zip
+
+# Configuração gerada para cada sessão do Learner Lab
+frontend/config.js

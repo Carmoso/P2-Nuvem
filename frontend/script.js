@@ -297,12 +297,27 @@ $("form-evento").addEventListener("submit", async (evento) => {
 
     const id = $("evento-id").value;
 
+    const participantesTexto = $("evento-participantes").value.trim();
+
+    const participantes = participantesTexto === ""
+        ? null
+        : Number(participantesTexto);
+
+    if (
+        participantes !== null &&
+        (!Number.isSafeInteger(participantes) || participantes <= 0)
+    ) {
+        notificar("Informe uma quantidade válida de participantes.");
+        return;
+    }
+
     const dados = {
         titulo: $("evento-titulo").value.trim(),
         descricao: $("evento-descricao").value.trim(),
         data_inicio: new Date($("evento-inicio").value).toISOString(),
         data_fim: new Date($("evento-fim").value).toISOString(),
-        auditorio_id: Number($("evento-auditorio").value)
+        auditorio_id: Number($("evento-auditorio").value),
+          participantes_previstos: participantes
     };
 
     if (id) {
@@ -347,6 +362,8 @@ function editarEvento(id) {
     $("evento-inicio").value = dataParaInput(evento.data_inicio);
     $("evento-fim").value = dataParaInput(evento.data_fim);
     $("evento-auditorio").value = evento.auditorio_id;
+    $("evento-participantes").value =
+        evento.participantes_previstos ?? "";
     $("evento-status").value = evento.status || "agendado";
 
     $("titulo-form-evento").textContent = "Editar evento";

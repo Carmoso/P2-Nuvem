@@ -1,0 +1,13 @@
+.git/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+.aws/
+*.pem
+*.bak
+frontend/
+lambdas/
+docs/
+specs/
