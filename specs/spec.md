@@ -35,12 +35,36 @@ O público-alvo são os organizadores que agendam eventos na faculdade e os admi
 | US-07 | **[RF-06]** | Como *Organizador ou Administrador*, quero consultar a disponibilidade de auditórios por data e intervalo de horário para identificar opções adequadas ao evento. | - **Dado** uma data, um intervalo de horário e a capacidade desejada, **quando** consulto a disponibilidade, **então** o sistema retorna apenas os auditórios compatíveis, sem conflitos com eventos ou bloqueios registrados.<br>- **Dado** que não existem auditórios disponíveis para os parâmetros informados, **quando** realizo a consulta, **então** o sistema informa claramente que não há opções disponíveis para aquele período. |
 | US-08 | **[RF-08]** | Como *Organizador ou Administrador*, quero cancelar ou encerrar um evento para atualizar seu status e disponibilizar novamente o horário do auditório quando aplicável. | - **Dado** que um evento pode ser cancelado ou encerrado, **quando** confirmo a operação, **então** o sistema atualiza seu status no RDS e considera o horário correspondente disponível para novos agendamentos, respeitando as regras de bloqueio e o período de utilização do auditório. |
 
-## 5. Decisões em Aberto    
+## 5. Decisões Consolidadas e Limitações Conhecidas
 
-* **US-01/US-05:** Definir como o sistema identifica o usuário e quais ações são permitidas para cada perfil, para tornar verificável o acesso a “meus eventos” e às funcionalidades de cada perfil.
-* **US-02:** Definir formatos de imagem aceitos e limite de tamanho do banner.
-* **US-03:** Definir dimensões, formato e política de recorte da miniatura.
-* **US-04:** Definir se o relatório terá filtro por período. Até essa definição, o critério considera todos os eventos com data até a data da consulta.
-* **US-01/US-08:** Definir os status possíveis para os eventos e as regras para cancelamento, encerramento e liberação dos horários dos auditórios.
-* **US-05/US-06/US-08:** Definir as permissões de cada perfil para gerenciar auditórios, consultar informações e alterar eventos.
-* **US-06/US-07:** Definir como serão tratados os bloqueios, a capacidade dos auditórios e os conflitos de horário durante o agendamento.
+Durante o desenvolvimento do EventHub, algumas decisões inicialmente consideradas em aberto foram definidas e incorporadas à implementação. Outras permanecem como limitações ou possibilidades de evolução do sistema.
+
+### 5.1. Decisões implementadas
+
+- **US-01/US-07 — Validação de agendamentos:** O sistema verifica a disponibilidade dos auditórios antes de confirmar agendamentos, considerando a capacidade necessária, os eventos existentes e os períodos de bloqueio registrados.
+
+- **US-06 — Gerenciamento dos auditórios:** Os auditórios possuem informações de identificação, capacidade, localização, recursos e situação de atividade. Também é possível registrar e excluir bloqueios de utilização por período.
+
+- **US-06/US-07 — Conflitos e indisponibilidades:** A consulta de disponibilidade considera apenas auditórios ativos, com capacidade suficiente e sem conflitos com eventos não cancelados ou bloqueios existentes no intervalo solicitado.
+
+- **US-01/US-08 — Status dos eventos:** Foram definidos os status `agendado`, `finalizado` e `cancelado`. A aplicação possui validações para controlar as alterações de status e evitar transições incompatíveis com as regras estabelecidas.
+
+- **US-08 — Liberação de horários:** Eventos cancelados deixam de impedir novos agendamentos no período correspondente. Os eventos finalizados permanecem registrados no histórico e continuam sujeitos às regras de verificação de conflitos.
+
+- **US-02/US-03 — Armazenamento de imagens:** Os banners são armazenados no Amazon S3, enquanto a geração das miniaturas é realizada por uma função AWS Lambda. As referências dos arquivos são associadas aos eventos no PostgreSQL.
+
+- **US-05 — Acesso à aplicação:** O frontend foi publicado como site estático no Amazon S3, consumindo a API Flask hospedada na EC2 e o endpoint de relatórios disponibilizado pelo API Gateway.
+
+### 5.2. Limitações e decisões pendentes
+
+- **US-01/US-05 — Autenticação e perfis:** A identificação de usuários e o controle de permissões por perfil ainda não estão definidos como funcionalidades completas da aplicação. As personas representam os diferentes tipos de usuários previstos, mas não implicam a existência de autenticação e autorização implementadas.
+
+- **US-02 — Restrições de banners:** Os limites formais de tamanho e os formatos aceitos devem ser documentados conforme as validações efetivamente disponíveis na aplicação.
+
+- **US-03 — Padronização das miniaturas:** O processamento das imagens está implementado, mas as dimensões exatas e a política de recorte devem ser conferidas na configuração da função Lambda antes de serem estabelecidas como requisitos definitivos.
+
+- **US-04 — Filtro do relatório:** O relatório gerencial apresenta informações agregadas por auditório. A regra de seleção temporal dos eventos e a possibilidade de filtragem por período devem ser verificadas na implementação para garantir correspondência com os critérios de aceite documentados.
+
+### 5.3. Possibilidades de evolução
+
+As limitações identificadas não impedem a demonstração das funcionalidades desenvolvidas no escopo atual do projeto. Entre as melhorias futuras estão a implementação de autenticação e autorização por perfil, a ampliação dos filtros gerenciais e o aperfeiçoamento das validações e configurações relacionadas às imagens.
