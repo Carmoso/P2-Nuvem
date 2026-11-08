@@ -59,3 +59,95 @@ Tabela de rotas das duas subnets do RDS, sem rota direta para um Internet Gatewa
 As capturas de tela não devem apresentar senhas, chaves de acesso AWS, tokens de sessão ou outras credenciais sensíveis.
 
 As evidências complementam os registros técnicos presentes no `README.md`, em `specs/infra.md` e em `specs/design.md`.
+
+## 6. Amazon EC2 e Docker
+
+### Instância EC2
+
+![Instância EC2 do EventHub](imagens/ec2-instancia-eventhub.png)
+
+A captura apresenta a instância EC2 utilizada para hospedar a API principal do EventHub, identificada como `ec2-projeto-eventos`.
+
+### Docker e funcionamento da API
+
+![Docker e API funcionando](imagens/ec2-docker-api-funcionando.png)
+
+A evidência apresenta o contêiner `eventhub-api` em execução, utilizando autenticação automática pelo `LabRole` e respondendo às requisições da API.
+
+## 7. Amazon S3
+
+### Buckets do projeto
+
+![Buckets S3 do EventHub](imagens/s3-buckets-eventhub.png)
+
+A captura demonstra a utilização de buckets separados para hospedagem do frontend e armazenamento dos banners e miniaturas.
+
+### Hospedagem do frontend
+
+![Hospedagem estática no S3](imagens/s3-hospedagem-frontend.png)
+
+Apresenta a configuração de hospedagem estática do bucket responsável pela interface web do EventHub.
+
+### Gatilho da LambdaThumb
+
+![Notificação do S3 para LambdaThumb](imagens/s3-gatilho-lambdathumb.png)
+
+Demonstra a configuração do evento `ObjectCreated`, com prefixo `uploads/`, que aciona a função `LambdaThumb` quando novos banners são enviados ao bucket.
+
+### Miniaturas processadas
+
+![Miniaturas armazenadas no S3](imagens/s3-miniaturas-processadas.png)
+
+A captura apresenta os arquivos de miniaturas armazenados no S3 após o processamento das imagens.
+
+## 8. Amazon API Gateway
+
+### Rota de relatórios
+
+![Rota de relatórios no API Gateway](imagens/apigateway-rota-relatorios.png)
+
+Apresenta a configuração da rota `GET /relatorios/ocupacao`, responsável por disponibilizar os dados do relatório gerencial.
+
+### Integração com LambdaRelatorio
+
+![Integração API Gateway e LambdaRelatorio](imagens/apigateway-integracao-rota-relatorios.png)
+
+Demonstra que o API Gateway está integrado à função `LambdaRelatorio`.
+
+### Teste do endpoint
+
+![Teste HTTP do relatório](imagens/apigateway-relatorio-http200.png)
+
+Registra o teste de acesso ao endpoint do relatório, utilizado para comprovar sua disponibilidade por meio de uma resposta HTTP 200.
+
+## 9. Frontend do EventHub
+
+### Visão geral
+
+![Dashboard principal do EventHub](imagens/frontend-visao-geral.png)
+
+A captura apresenta o dashboard principal, com indicadores de eventos e auditórios, conexão com a API e visualização de banners.
+
+### Gerenciamento de eventos
+
+![Gerenciamento de eventos](imagens/frontend-gerenciamento-eventos.png)
+
+Demonstra a interface de gerenciamento dos eventos cadastrados, com informações de agendamento e operações disponíveis.
+
+### Gerenciamento de auditórios
+
+![Gerenciamento de auditórios](imagens/frontend-gerenciamento-auditorios.png)
+
+Apresenta a interface de cadastro e administração dos auditórios utilizados pelo sistema.
+
+### Consulta de disponibilidade
+
+![Disponibilidade dos auditórios](imagens/frontend-disponibilidade-auditorios.png)
+
+Demonstra uma consulta realizada para 250 participantes, no período de 24/11/2026, das 19h50 às 23h50, com dois auditórios disponíveis como resultado.
+
+### Relatório gerencial
+
+![Relatório gerencial do EventHub](imagens/frontend-relatorio-gerencial.png)
+
+Apresenta os indicadores e as informações gerenciais obtidas por meio da integração entre o frontend, o API Gateway, a `LambdaRelatorio` e o RDS PostgreSQL.
