@@ -263,6 +263,27 @@ document.querySelectorAll(".nav-btn").forEach(botao => {
     });
 });
 
+// Validar as datas do evento no formulário
+function validarPeriodoEvento() {
+    const inicio = $("evento-inicio");
+    const fim = $("evento-fim");
+
+    fim.min = inicio.value || "";
+
+    if (inicio.value && fim.value && fim.value <= inicio.value) {
+        fim.setCustomValidity(
+            "A data de término deve ser posterior à data de início."
+        );
+    } else {
+        fim.setCustomValidity("");
+    }
+}
+
+["evento-inicio", "evento-fim"].forEach(id => {
+    $(id).addEventListener("input", validarPeriodoEvento);
+    $(id).addEventListener("change", validarPeriodoEvento);
+});
+
 // Cadastro e edição de eventos
 async function enviarBanner(eventoId, arquivo) {
     const dados = await requisicao(`/eventos/${eventoId}/banner-url`, {
@@ -361,6 +382,7 @@ function editarEvento(id) {
     $("evento-descricao").value = evento.descricao || "";
     $("evento-inicio").value = dataParaInput(evento.data_inicio);
     $("evento-fim").value = dataParaInput(evento.data_fim);
+    validarPeriodoEvento();
     $("evento-auditorio").value = evento.auditorio_id;
     $("evento-participantes").value =
         evento.participantes_previstos ?? "";
@@ -385,6 +407,7 @@ async function excluirEvento(id) {
 
 function limparEvento() {
     $("form-evento").reset();
+    validarPeriodoEvento();
     $("evento-id").value = "";
     $("titulo-form-evento").textContent = "Cadastrar evento";
 }
