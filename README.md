@@ -111,6 +111,36 @@ sudo docker logs --tail 30 eventhub-api
 
 O arquivo local de configuração da aplicação fica em **`/etc/eventhub/app.env`**. Ele contém informações sensíveis e **não deve ser copiado para o repositório nem exibido em capturas de tela**.
 
+### 6.2.1. Autenticação automática do Docker via IAM
+
+A EC2 possui o perfil **`LabInstanceProfile`**, com a role **`LabRole`**. O contêiner principal foi substituído por uma configuração que utiliza as credenciais temporárias obtidas automaticamente pelo **IMDSv2**. Não é mais necessário montar o diretório `~/.aws` no contêiner nem renovar as credenciais do usuário para as operações AWS do backend.
+
+A instância exige IMDSv2 e está configurada com limite de saltos HTTP `2`, adequado ao acesso pelo contêiner Docker neste ambiente. Para conferir o método de autenticação sem exibir informações sensíveis:
+
+```bash
+sudo docker exec eventhub-api python -c 'import boto3; c=boto3.Session().get_credentials(); print("Metodo:", c.method if c else "Nenhum")'
+```
+
+O resultado esperado é `Metodo: iam-role`.
+
+**Somente se o contêiner precisar ser recriado** e **não houver um contêiner com o nome `eventhub-api`**, utilize a imagem Docker já disponível na EC2 e o arquivo local de ambiente:
+
+```bash
+sudo docker run -d \
+  --name eventhub-api \
+  --restart unless-stopped \
+  --env-file /etc/eventhub/app.env \
+  -e AWS_SHARED_CREDENTIALS_FILE=/dev/null \
+  -e AWS_CONFIG_FILE=/dev/null \
+  -e AWS_EC2_METADATA_DISABLED=false \
+  -p 5000:5000 \
+  eventhub-api:rf08-status
+```
+
+Esse comando **não** deve ser executado enquanto a aplicação principal já estiver em execução; não remova o contêiner atual para testar a documentação. A reconstrução completa da imagem e da infraestrutura precisa ser descrita também em `specs/infra.md`.
+
+**Testes realizados em 08/11/2026:** API com resposta HTTP 200, autenticação `iam-role`, operações `PutObject`, `GetObject` e `DeleteObject` no S3 e visualização de um banner existente com resposta HTTP 200. O contêiner antigo foi preservado como backup (`eventhub-api-pre-iam`). Ainda não foi realizado um novo teste de reinício **após** a troca definitiva do contêiner.
+
 ### 6.3. Atualizar o endereço da API e publicá-lo automaticamente
 
 O IP público da EC2 pode mudar entre sessões. Por esse motivo, o frontend carrega `config.js` antes de `script.js`, e o primeiro arquivo **não é versionado**. O repositório inclui apenas `frontend/config.example.js`.
@@ -145,7 +175,7 @@ Se precisar executar a atualização novamente:
 sudo systemctl start eventhub-config.service
 ```
 
-**Atenção:** a geração e publicação foram verificadas com sucesso ao executar o serviço manualmente. O funcionamento completo após um novo reinício da EC2 ainda depende de teste específico, assim como a disponibilidade do perfil IAM nas sessões futuras do Learner Lab.
+**Validação em 08/11/2026:** após encerrar e reiniciar o Learner Lab, a EC2 iniciou o contêiner então existente, detectou a mudança do IP público de `54.145.57.79` para `54.242.30.184` e publicou automaticamente o novo `config.js` no S3. O arquivo público foi comparado com o gerado na EC2, e as rotas de auditórios e eventos responderam com HTTP 200. Esse teste ocorreu **antes** da troca definitiva do contêiner para autenticação `iam-role`; o reinício dessa nova versão ainda deve ser validado.
 
 ### 6.4. Validar o frontend publicado
 
@@ -174,7 +204,11 @@ Atualize o navegador com **Ctrl + Shift + R** se uma versão antiga estiver em c
 
 ### 6.5. Credenciais temporárias do laboratório
 
-O script de publicação do frontend usa as credenciais automáticas da EC2. **Outros processos podem depender das credenciais da sessão do Learner Lab**, como configurações locais da CLI ou credenciais montadas no contêiner. Se uma operação AWS falhar com credenciais expiradas, renove-as pelo mecanismo oficial do laboratório e repita somente o teste correspondente.
+O script de publicação do frontend **e o contêiner principal `eventhub-api`** utilizam as credenciais temporárias automáticas do perfil IAM da EC2 (`LabRole`). Portanto, **não exigem renovação manual das credenciais locais para acessar os serviços AWS testados**.
+
+Comandos da AWS CLI executados manualmente no usuário `ubuntu` ainda podem priorizar credenciais antigas em `~/.aws/credentials` e apresentar erros como `UnauthorizedOperation` ou `ExpiredToken`. Para consultar serviços com o perfil da instância, use explicitamente o mecanismo de autenticação por IAM role; se precisar das credenciais próprias da sessão, renove-as pelo procedimento oficial do Learner Lab. Isso **não** exige alterar o contêiner principal.
+
+A associação do perfil IAM é uma configuração da infraestrutura AWS, não do código-fonte; confira sua presença ao recriar a EC2 ou o ambiente de laboratório.
 
 Nunca publique chaves de acesso, chaves secretas, tokens de sessão ou senhas no GitHub, em logs compartilhados ou em capturas de tela.
 
@@ -182,6 +216,7 @@ Nunca publique chaves de acesso, chaves secretas, tokens de sessão ou senhas no
 
 - [ ] EC2 e RDS disponíveis.
 - [ ] Contêiner `eventhub-api` em execução.
+- [ ] `boto3` no contêiner reporta `Metodo: iam-role`.
 - [ ] API Flask responde no endereço público atual da EC2, porta `5000`.
 - [ ] Serviço `eventhub-config.service` executou com sucesso.
 - [ ] `config.js` publicado no site S3 contém o endereço da API da sessão atual.
