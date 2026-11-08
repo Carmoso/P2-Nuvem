@@ -550,6 +550,14 @@ function editarEvento(id) {
     $("evento-descricao").value = evento.descricao || "";
     $("evento-inicio").value = dataParaInput(evento.data_inicio);
     $("evento-fim").value = dataParaInput(evento.data_fim);
+
+    // Eventos que já começaram mantêm suas datas históricas.
+    const eventoHistorico =
+        new Date(evento.data_inicio).getTime() < Date.now();
+
+    $("evento-inicio").disabled = eventoHistorico;
+    $("evento-fim").disabled = eventoHistorico;
+
     validarPeriodoEvento();
     $("evento-auditorio").value = evento.auditorio_id;
     $("evento-participantes").value =
@@ -579,6 +587,11 @@ async function excluirEvento(id) {
 
 function limparEvento() {
     $("form-evento").reset();
+
+    // Novos eventos precisam ter datas editáveis.
+    $("evento-inicio").disabled = false;
+    $("evento-fim").disabled = false;
+
     $("evento-participantes").required = true;
     $("evento-id").value = "";
     validarPeriodoEvento();

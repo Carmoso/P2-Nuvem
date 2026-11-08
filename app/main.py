@@ -652,6 +652,50 @@ def atualizar_evento(item_id):
     try:
         valores[5] = int(valores[5])
 
+        # Preservar as datas de eventos que já começaram.
+        def normalizar_data_historica(valor):
+            data = datetime.fromisoformat(
+                str(valor).replace("Z", "+00:00")
+            )
+
+            if data.tzinfo is not None:
+                data = data.astimezone(
+                    timezone.utc
+                ).replace(tzinfo=None)
+
+            return data
+
+        inicio_cadastrado = normalizar_data_historica(
+            atual[0]["data_inicio"]
+        )
+
+        agora_utc = datetime.now(
+            timezone.utc
+        ).replace(tzinfo=None)
+
+        if inicio_cadastrado < agora_utc:
+            for campo, indice in (
+                ("data_inicio", 2),
+                ("data_fim", 3)
+            ):
+                if campo not in dados:
+                    continue
+
+                data_original = normalizar_data_historica(
+                    atual[0][campo]
+                )
+                data_informada = normalizar_data_historica(
+                    valores[indice]
+                )
+
+                if data_informada != data_original:
+                    return jsonify({
+                        "erro": (
+                            "Não é permitido alterar as datas de "
+                            "um evento que já começou."
+                        )
+                    }), 400
+
         # Impedir reagendamento de eventos para datas passadas.
         # A edição de eventos históricos sem mudar o início
         # continua permitida.
