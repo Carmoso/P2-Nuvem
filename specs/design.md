@@ -2,6 +2,8 @@
 
 ## 1. Diagrama de Arquitetura
 
+![Arquitetura AWS do EventHub](../docs/imagens/arquitetura-eventhub.png)
+
 ```plantuml
 
 @startuml
