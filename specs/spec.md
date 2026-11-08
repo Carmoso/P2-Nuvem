@@ -63,7 +63,7 @@ Durante o desenvolvimento do EventHub, algumas decisões inicialmente considerad
 
 - **US-03 — Padronização das miniaturas:** O processamento das imagens está implementado, mas as dimensões exatas e a política de recorte devem ser conferidas na configuração da função Lambda antes de serem estabelecidas como requisitos definitivos.
 
-- **US-04 — Filtro do relatório:** O relatório gerencial apresenta informações agregadas por auditório. A regra de seleção temporal dos eventos e a possibilidade de filtragem por período devem ser verificadas na implementação para garantir correspondência com os critérios de aceite documentados.
+- **US-04 — Filtro do relatório:** O relatório gerencial apresenta a quantidade total de eventos por auditório, discriminando os eventos agendados, finalizados e cancelados. São considerados os eventos cuja data e hora de início sejam anteriores ou iguais ao momento da consulta, utilizando o horário UTC como referência. A implementação atual não possui filtros personalizados por período, que poderão ser adicionados futuramente.
 
 ### 5.3. Possibilidades de evolução
 
