@@ -26,6 +26,7 @@ SELECT
 FROM auditorios a
 LEFT JOIN eventos e
     ON e.auditorio_id = a.id
+    AND e.data_inicio <= (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
 GROUP BY
     a.id, a.nome, a.capacidade, a.localizacao
 ORDER BY

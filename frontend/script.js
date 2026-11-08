@@ -191,7 +191,7 @@ async function carregarRelatorio() {
 
     try {
         const resposta = await fetch(
-            "https://10ciu9d8h0.execute-api.us-east-1.amazonaws.com/relatorios/auditorios"
+            "https://10ciu9d8h0.execute-api.us-east-1.amazonaws.com/relatorios/ocupacao"
         );
 
         if (!resposta.ok) {
