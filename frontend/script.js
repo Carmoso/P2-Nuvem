@@ -568,6 +568,21 @@ function editarEvento(id) {
         evento.participantes_previstos != null;
     $("evento-status").value = evento.status || "agendado";
 
+    // RF-08: cancelamento e finalização são definitivos.
+    const statusEncerrado = ["cancelado", "finalizado"]
+        .includes(evento.status);
+
+    $("evento-status").disabled = statusEncerrado;
+
+    // Não permitir finalização antes do término.
+    const termino = new Date(evento.data_fim).getTime();
+    const podeFinalizar =
+        Number.isFinite(termino) && termino <= Date.now();
+
+    $("evento-status")
+        .querySelector('option[value="finalizado"]')
+        .disabled = !podeFinalizar && !statusEncerrado;
+
     $("titulo-form-evento").textContent = "Editar evento";
     mostrarPagina("eventos");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -593,6 +608,13 @@ function limparEvento() {
     $("evento-fim").disabled = false;
 
     $("evento-participantes").required = true;
+
+    // Restaurar o seletor de status para novos cadastros.
+    $("evento-status").disabled = false;
+    $("evento-status")
+        .querySelector('option[value="finalizado"]')
+        .disabled = false;
+
     $("evento-id").value = "";
     validarPeriodoEvento();
     $("titulo-form-evento").textContent = "Cadastrar evento";

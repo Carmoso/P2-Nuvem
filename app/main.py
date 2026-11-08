@@ -652,6 +652,52 @@ def atualizar_evento(item_id):
     try:
         valores[5] = int(valores[5])
 
+        # RF-08: controlar o ciclo de vida dos eventos.
+        status_atual = atual[0]["status"]
+        status_novo = valores[4]
+
+        # Cancelamento e finalização são estados definitivos.
+        if (
+            status_atual in ("cancelado", "finalizado")
+            and status_novo != status_atual
+        ):
+            return jsonify({
+                "erro": (
+                    "Eventos cancelados ou finalizados "
+                    "não podem mudar de status."
+                )
+            }), 409
+
+        # Só permitir finalização após o término do evento.
+        if (
+            status_atual == "agendado"
+            and status_novo == "finalizado"
+        ):
+            fim_registrado = atual[0]["data_fim"]
+
+            if isinstance(fim_registrado, str):
+                fim_registrado = datetime.fromisoformat(
+                    fim_registrado.replace("Z", "+00:00")
+                )
+
+            if fim_registrado.tzinfo is not None:
+                fim_registrado = fim_registrado.astimezone(
+                    timezone.utc
+                ).replace(tzinfo=None)
+
+            agora_utc = datetime.now(
+                timezone.utc
+            ).replace(tzinfo=None)
+
+            if fim_registrado > agora_utc:
+                return jsonify({
+                    "erro": (
+                        "O evento só pode ser finalizado "
+                        "após a data e hora de término."
+                    )
+                }), 409
+
+
         # Preservar as datas de eventos que já começaram.
         def normalizar_data_historica(valor):
             data = datetime.fromisoformat(
