@@ -551,11 +551,14 @@ def buscar_evento(item_id):
 @app.post("/eventos")
 def criar_evento():
     dados = request.get_json(silent=True) or {}
-    obrigatorios = ("titulo", "data_inicio", "data_fim", "auditorio_id")
+    obrigatorios = (
+        "titulo", "data_inicio", "data_fim",
+        "auditorio_id", "participantes_previstos"
+    )
 
-    if any(campo not in dados for campo in obrigatorios):
+    if any(dados.get(campo) in (None, "") for campo in obrigatorios):
         return jsonify({
-            "erro": "Informe titulo, data_inicio, data_fim e auditorio_id"
+            "erro": "Informe título, datas, auditório e participantes previstos."
         }), 400
 
     try:

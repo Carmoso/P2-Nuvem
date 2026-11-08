@@ -522,6 +522,10 @@ function editarEvento(id) {
     $("evento-auditorio").value = evento.auditorio_id;
     $("evento-participantes").value =
         evento.participantes_previstos ?? "";
+
+    // Eventos antigos sem participantes continuam editáveis.
+    $("evento-participantes").required =
+        evento.participantes_previstos != null;
     $("evento-status").value = evento.status || "agendado";
 
     $("titulo-form-evento").textContent = "Editar evento";
@@ -543,6 +547,7 @@ async function excluirEvento(id) {
 
 function limparEvento() {
     $("form-evento").reset();
+    $("evento-participantes").required = true;
     validarPeriodoEvento();
     $("evento-id").value = "";
     $("titulo-form-evento").textContent = "Cadastrar evento";
