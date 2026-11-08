@@ -14,7 +14,7 @@ O erro foi identificado durante o desenvolvimento. As execuções registradas no
 
 ## 2. LambdaThumb — Métricas do CloudWatch
 
-![Métricas da LambdaThumb](lambdathumb-metricas-cloudwatch.png)
+![Métricas da LambdaThumb](lambdathumb-metricas-cloudwatch.png.png)
 
 A captura apresenta o monitoramento de invocações e erros da função LambdaThumb.
 
